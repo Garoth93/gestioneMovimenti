@@ -1,0 +1,22 @@
+<RCC>
+    <qresource prefix="/">
+        <file>aggiungi.png</file>
+        <file>save.png</file>
+        <file>elimina.png</file>
+        <file>cerca.png</file>
+        <file>conferma.png</file>
+        <file>esci.png</file>
+        <file>left.png</file>
+        <file>lock.png</file>
+        <file>opzioni.png</file>
+        <file>right.png</file>
+        <file>undo.png</file>
+        <file>up.png</file>
+        <file>printer.png</file>
+        <file>../pig.ico</file>
+        <file>../pig2.ico</file>
+        <file>calendario.ico</file>
+        <file>zoomMinus.png</file>
+        <file>zoomPlus.png</file>
+    </qresource>
+</RCC>
