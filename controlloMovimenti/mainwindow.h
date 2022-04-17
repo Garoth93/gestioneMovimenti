@@ -18,18 +18,9 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-    virtual void cambioRadio();
-    virtual void popolaComboTemi();
-    virtual void comboTemiCambiata();
-    virtual void CheckLegendaCambiata();
-    virtual void setZoomGrafici(QString oper);
-    virtual void impostaLeDateAlDettaglioSingolo();
-
 private:
     Ui::MainWindow *ui;
 
     screeMovimenti * mainScreen;
-
-    QList<creaGrafico*> l_listaGrafici;
 };
 #endif // MAINWINDOW_H

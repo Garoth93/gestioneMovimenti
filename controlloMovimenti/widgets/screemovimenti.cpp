@@ -32,6 +32,8 @@ screeMovimenti::~screeMovimenti()
 
 void screeMovimenti::init(dbConnection * oggDb)
 {
+    /*parte gestione conto tab 1------>*/
+
     m_modello=NULL;
     m_tableView=NULL;
     m_sortModello=NULL;
@@ -199,6 +201,124 @@ void screeMovimenti::init(dbConnection * oggDb)
     popolaComboCategoria();
     btnResetFiltri();
     ricaricaModello();
+
+    /*parte grafici tab 2------>*/
+
+    popolaComboTemi();
+
+    ui->de_s1->setDate(QDate::currentDate());
+    ui->de_s2->setDate(QDate::currentDate());
+    ui->r_tutti->setChecked(true);
+
+    /*setto le date per aggiornare grafici con ora*/
+    impostaLeDateAlDettaglioSingolo();
+
+    /*carico i grafici*/
+    resetGraficiPeriodo();
+
+    /*setto i grafici nel tab due*/
+    ui->grid_grafici->addWidget(graTotEU(),2,0);
+    ui->grid_grafici->addWidget(graTotCatU(),2,1);
+    ui->grid_grafici->addWidget(graTotCatE(),2,2);
+
+    ui->grid_grafici->addWidget(graPerEU(),1,0);
+    ui->grid_grafici->addWidget(graPerCatU(),1,1);
+    ui->grid_grafici->addWidget(graPerCatE(),1,2);
+
+    /*metto tutti i grafici nella lista per fare operazioni poi*/
+    l_listaGrafici.push_back(graTotEU());
+    l_listaGrafici.push_back(graTotCatU());
+    l_listaGrafici.push_back(graTotCatE());
+    l_listaGrafici.push_back(graPerEU());
+    l_listaGrafici.push_back(graPerCatU());
+    l_listaGrafici.push_back(graPerCatE());
+
+    ui->tb_cercaFGra->setIcon(QIcon((":/cerca.png")));
+    ui->tb_cercaFGra->setToolTip("Cerca periodo");
+    connect(ui->tb_cercaFGra, &QToolButton::clicked, this, [=]()
+    {
+        /*prendo date da ui per settarle ad altra ui bruttttto*/
+        impostaLeDateAlDettaglioSingolo();
+        resetGraficiPeriodo();
+    });
+
+    /*radio*/
+    connect(ui->r_tutti, &QRadioButton::toggled, this, [=]()
+    {
+        cambioRadio();
+    });
+    connect(ui->r_periodo, &QRadioButton::toggled, this, [=]()
+    {
+        cambioRadio();
+    });
+    connect(ui->r_totale, &QRadioButton::toggled, this, [=]()
+    {
+        cambioRadio();
+    });
+
+    /*setto periodo a mese corrente*/
+    ui->tb_setMese->setIcon(QIcon((":/calendario.ico")));
+    ui->tb_setMese->setToolTip("Setta data periodo mese corrente");
+    connect(ui->tb_setMese, &QToolButton::clicked, this, [=]()
+    {
+        QDate today=QDate::currentDate();
+        ui->de_s1->setDate(QDate(today.year(),today.month(),1));
+        ui->de_s2->setDate(QDate(today.month()==12?today.year()+1:today.year(),today.month()==12?1:today.month()+1,1));
+        impostaLeDateAlDettaglioSingolo();
+        resetGraficiPeriodo();
+    });
+
+    /*combo temi*/
+    connect(ui->cb_temi, &QComboBox::currentIndexChanged, this, [=]()
+    {
+        comboTemiCambiata();
+    });
+
+    /*chek box legenda*/
+    ui->cb_legenda->setChecked(true);
+    connect(ui->cb_legenda, &QCheckBox::clicked, this, [=]()
+    {
+        checkLegendaCambiata();
+    });
+
+    /*btn zoom grafici*/
+    ui->tb_setDimMenGra->setIcon(QIcon((":/zoomMinus.png")));
+    ui->tb_setDimMenGra->setToolTip("Zoom - grafici");
+    connect(ui->tb_setDimMenGra, &QToolButton::clicked, this, [=]()
+    {
+        setZoomGrafici("-");
+    });
+
+    /*btn zoom grafici*/
+    ui->tb_setDimPiuGra->setIcon(QIcon((":/zoomPlus.png")));
+    ui->tb_setDimPiuGra->setToolTip("Zoom + grafici");
+    connect(ui->tb_setDimPiuGra, &QToolButton::clicked, this, [=]()
+    {
+        setZoomGrafici("+");
+    });
+
+    /* btn add settimana filri*/
+    ui->tb_setPiuData->setToolTip("Più una settimana");
+    ui->tb_setPiuData->setIcon(QIcon((":/zoomPlus.png")));
+    connect(ui->tb_setPiuData, &QToolButton::clicked, this, [=]()
+    {
+        ui->de_s1->setDate((ui->de_s1->date().addDays(7)));
+        ui->de_s2->setDate((ui->de_s2->date().addDays(7)));
+        resetGraficiPeriodo();
+    });
+
+    /* btn add settimana filri*/
+    ui->tb_setMenoData->setToolTip("Meno una settimana");
+    ui->tb_setMenoData->setIcon(QIcon((":/zoomMinus.png")));
+    connect(ui->tb_setMenoData, &QToolButton::clicked, this, [=]()
+    {
+        ui->de_s1->setDate((ui->de_s1->date().addDays(-7)));
+        ui->de_s2->setDate((ui->de_s2->date().addDays(-7)));
+        impostaLeDateAlDettaglioSingolo();
+        resetGraficiPeriodo();
+    });
+
+    comboTemiCambiata();
 }
 
 void screeMovimenti::creaModello()
@@ -484,6 +604,86 @@ void screeMovimenti::resetGraficiPeriodo()
     m_graPerCatE->componiGrafico();
     m_graPerCatU->componiGrafico();
     m_graPerEU->componiGrafico();
+}
+
+void screeMovimenti::cambioRadio()
+{
+    if(ui->r_tutti->isChecked())
+    {
+        graPerCatE()->setVisible(true);
+        graPerCatU()->setVisible(true);
+        graPerEU()->setVisible(true);
+        graTotCatE()->setVisible(true);
+        graTotCatU()->setVisible(true);
+        graTotEU()->setVisible(true);
+    }
+    else if(ui->r_periodo->isChecked())
+    {
+        graPerCatE()->setVisible(true);
+        graPerCatU()->setVisible(true);
+        graPerEU()->setVisible(true);
+        graTotCatE()->setVisible(false);
+        graTotCatU()->setVisible(false);
+        graTotEU()->setVisible(false);
+    }
+    else if(ui->r_totale->isChecked())
+    {
+        graPerCatE()->setVisible(false);
+        graPerCatU()->setVisible(false);
+        graPerEU()->setVisible(false);
+        graTotCatE()->setVisible(true);
+        graTotCatU()->setVisible(true);
+        graTotEU()->setVisible(true);
+    }
+}
+
+void screeMovimenti::popolaComboTemi()
+{
+    ui->cb_temi->addItem("Blue Cerulean", QChart::ChartThemeBlueCerulean);
+    ui->cb_temi->addItem("Light", QChart::ChartThemeLight);
+    ui->cb_temi->addItem("Dark", QChart::ChartThemeDark);
+    ui->cb_temi->addItem("Brown Sand", QChart::ChartThemeBrownSand);
+    ui->cb_temi->addItem("Blue NCS", QChart::ChartThemeBlueNcs);
+    ui->cb_temi->addItem("High Contrast", QChart::ChartThemeHighContrast);
+    ui->cb_temi->addItem("Blue Icy", QChart::ChartThemeBlueIcy);
+    ui->cb_temi->addItem("Qt", QChart::ChartThemeQt);
+}
+
+void screeMovimenti::comboTemiCambiata()
+{
+    QChart::ChartTheme theme = static_cast<QChart::ChartTheme>(
+                ui->cb_temi->itemData(ui->cb_temi->currentIndex()).toInt());
+    foreach(creaGrafico* ggg,l_listaGrafici)
+    {
+        ggg->setTemaGrafico(theme);
+    }
+}
+
+void screeMovimenti::checkLegendaCambiata()
+{
+    bool toDo=false;
+    if(ui->cb_legenda->isChecked())
+        toDo=true;
+    foreach(creaGrafico* ggg,l_listaGrafici)
+    {
+        ggg->setLegenda(toDo);
+    }
+}
+
+void screeMovimenti::setZoomGrafici(QString oper)
+{
+    foreach(creaGrafico* ggg,l_listaGrafici)
+    {
+        ggg->setDimensioneGrafici(oper);
+    }
+}
+
+void screeMovimenti::impostaLeDateAlDettaglioSingolo()
+{
+    QDate d1=ui->de_s1->date();
+    QDate d2=ui->de_s2->date();
+    setDataCercaInizio(d1);
+    setDataCercaFine(d2);
 }
 
 void screeMovimenti::btnFiltriAgg()

@@ -53,6 +53,13 @@ public:
     virtual bool popolaMappaGrafici(QMap<QString,double> * map,QSqlQuery * qr);
     virtual void resetGraficiTotale();
     virtual void resetGraficiPeriodo();
+    virtual void cambioRadio();
+    virtual void popolaComboTemi();
+    virtual void comboTemiCambiata();
+    virtual void checkLegendaCambiata();
+    virtual void setZoomGrafici(QString oper);
+    virtual void impostaLeDateAlDettaglioSingolo();
+
 
     creaGrafico *graTotCatE() const;
 
@@ -97,6 +104,8 @@ private:
     QMap<QString,double> * m_mapPerCatE;
     QMap<QString,double> * m_mapPerCatU;
     QMap<QString,double> * m_mapPerEU;
+
+    QList<creaGrafico*> l_listaGrafici;
 
     creaGrafico * m_graTotCatE;
     creaGrafico * m_graTotCatU;
