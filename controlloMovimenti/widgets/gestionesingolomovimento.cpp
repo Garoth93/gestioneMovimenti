@@ -63,6 +63,32 @@ void gestioneSingoloMovimento::init(dbConnection *db,QString stat,bool * resulSc
         pressioneCalendario();
     });
 
+    resetSommaUtility();
+
+    /*line edit valore sommati*/
+    connect(ui->le_valorSomma, &QLineEdit::returnPressed, this, [=]()
+    {
+        /*prendo valore per sommarlo*/
+        double valLine=ui->le_valorSomma->text().replace(",", ".").toDouble();
+        QString valStoLine=ui->le_valorSomma->text();
+        sommaUtility+=valLine;
+        ui->le_valor->setText(QString::number(sommaUtility).replace(".",","));
+        ui->le_valorSomma->setFocus();
+        ui->le_valorSomma->setText("");
+        QString storico=ui->label_storicoSomma->text();
+        storico.remove("STORICO = ");
+        if(!(valStoLine.startsWith("+") || valStoLine.startsWith("-"))) valStoLine=tr("+%1").arg(valStoLine);
+        storico=tr("STORICO = %1%2").arg(storico).arg(valStoLine);
+        ui->label_storicoSomma->setText(storico);
+    });
+
+    ui->tb_resetSommaUt->setIcon(QIcon((":/undo.png")));
+    ui->tb_resetSommaUt->setToolTip("Reset somma utility");
+    connect(ui->tb_resetSommaUt, &QToolButton::clicked, this, [=]()
+    {
+        resetSommaUtility();
+    });
+
 }
 
 void gestioneSingoloMovimento::daUiInObg(oggMov * obj)
@@ -168,4 +194,10 @@ void gestioneSingoloMovimento::setDataCalenario(QDate dataTo)
 {
     ui->cw_main->setSelectedDate(dataTo);
     pressioneCalendario();
+}
+
+void gestioneSingoloMovimento::resetSommaUtility()
+{
+    sommaUtility=0.0;
+    ui->label_storicoSomma->setText("");
 }

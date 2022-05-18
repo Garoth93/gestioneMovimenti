@@ -30,6 +30,8 @@ public:
 
     virtual void setDataCalenario(QDate dataTo);
 
+    virtual void resetSommaUtility();
+
 public slots:
     virtual void pressioneConferma();
     virtual void pressioneCalendario();
@@ -43,6 +45,8 @@ private:
     oggMov * m_mainObj;
 
     bool * m_resultScreen;
+
+    double sommaUtility;
 };
 
 #endif // GESTIONESINGOLOMOVIMENTO_H

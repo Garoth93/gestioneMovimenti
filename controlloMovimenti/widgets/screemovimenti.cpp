@@ -70,6 +70,7 @@ void screeMovimenti::init(dbConnection * oggDb)
 
     ui->le_valor1->setValidator( new QDoubleValidator(-10000,+10000, 2, this) );
     ui->le_valor2->setValidator( new QDoubleValidator(-10000,+10000, 2, this) );
+    ui->le_backMesi->setValidator( new QIntValidator(0,1000,this) );
 
     ui->frameFiltriDett->setVisible(false);
     ui->frameFiltroCal->setVisible(true);
@@ -206,8 +207,8 @@ void screeMovimenti::init(dbConnection * oggDb)
 
     popolaComboTemi();
 
-    ui->de_s1->setDate(QDate::currentDate());
-    ui->de_s2->setDate(QDate::currentDate());
+    ui->de_s1graf->setDate(QDate::currentDate());
+    ui->de_s2graf->setDate(QDate::currentDate());
     ui->r_tutti->setChecked(true);
 
     /*setto le date per aggiornare grafici con ora*/
@@ -242,6 +243,23 @@ void screeMovimenti::init(dbConnection * oggDb)
         resetGraficiPeriodo();
     });
 
+    ui->tb_cercaFultMesi->setIcon(QIcon((":/cerca.png")));
+    ui->tb_cercaFultMesi->setToolTip("Cerca ultimi tot mesi");
+    connect(ui->tb_cercaFultMesi, &QToolButton::clicked, this, [=]()
+    {
+        /*imposto le date di cerca a meno tot mesi*/
+        QDate today=QDate::currentDate();
+        setDataCercaFine(today);
+        /*inizio oggi meno tot mesi*/
+        bool isConv=false;
+        int prendiMesi=ui->le_backMesi->text().toInt(&isConv);
+        if(!isConv)return;
+        today=today.addMonths(-prendiMesi);
+        qDebug() << today;
+        setDataCercaInizio(QDate(today.month()==12?today.year()+1:today.year(),today.month()==12?1:today.month()+1,1));
+        resetGraficiPeriodo();
+    });
+
     /*radio*/
     connect(ui->r_tutti, &QRadioButton::toggled, this, [=]()
     {
@@ -262,8 +280,8 @@ void screeMovimenti::init(dbConnection * oggDb)
     connect(ui->tb_setMese, &QToolButton::clicked, this, [=]()
     {
         QDate today=QDate::currentDate();
-        ui->de_s1->setDate(QDate(today.year(),today.month(),1));
-        ui->de_s2->setDate(QDate(today.month()==12?today.year()+1:today.year(),today.month()==12?1:today.month()+1,1));
+        ui->de_s1graf->setDate(QDate(today.year(),today.month(),1));
+        ui->de_s2graf->setDate(QDate(today.month()==12?today.year()+1:today.year(),today.month()==12?1:today.month()+1,1));
         impostaLeDateAlDettaglioSingolo();
         resetGraficiPeriodo();
     });
@@ -302,8 +320,9 @@ void screeMovimenti::init(dbConnection * oggDb)
     ui->tb_setPiuData->setIcon(QIcon((":/zoomPlus.png")));
     connect(ui->tb_setPiuData, &QToolButton::clicked, this, [=]()
     {
-        ui->de_s1->setDate((ui->de_s1->date().addDays(7)));
-        ui->de_s2->setDate((ui->de_s2->date().addDays(7)));
+        ui->de_s1graf->setDate((ui->de_s1graf->date().addDays(7)));
+        ui->de_s2graf->setDate((ui->de_s2graf->date().addDays(7)));
+        impostaLeDateAlDettaglioSingolo();
         resetGraficiPeriodo();
     });
 
@@ -312,8 +331,8 @@ void screeMovimenti::init(dbConnection * oggDb)
     ui->tb_setMenoData->setIcon(QIcon((":/zoomMinus.png")));
     connect(ui->tb_setMenoData, &QToolButton::clicked, this, [=]()
     {
-        ui->de_s1->setDate((ui->de_s1->date().addDays(-7)));
-        ui->de_s2->setDate((ui->de_s2->date().addDays(-7)));
+        ui->de_s1graf->setDate((ui->de_s1graf->date().addDays(-7)));
+        ui->de_s2graf->setDate((ui->de_s2graf->date().addDays(-7)));
         impostaLeDateAlDettaglioSingolo();
         resetGraficiPeriodo();
     });
@@ -680,8 +699,8 @@ void screeMovimenti::setZoomGrafici(QString oper)
 
 void screeMovimenti::impostaLeDateAlDettaglioSingolo()
 {
-    QDate d1=ui->de_s1->date();
-    QDate d2=ui->de_s2->date();
+    QDate d1=ui->de_s1graf->date();
+    QDate d2=ui->de_s2graf->date();
     setDataCercaInizio(d1);
     setDataCercaFine(d2);
 }
